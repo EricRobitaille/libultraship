@@ -185,6 +185,11 @@ void ControlDeck::LoadSettings() {
                     profile->RumbleStrength = config->GetFloat(NESTED("Rumble.Strength", ""));
                     profile->UseGyro = config->GetBool(NESTED("Gyro.Enabled", ""));
                     profile->NotchProximityThreshold = config->GetInt(NESTED("Notches.ProximityThreshold", ""));
+                    profile->UseEssAdapter = config->GetBool(NESTED("Ess.Enabled", ""));
+                    profile->InputEssMin = config->GetInt(NESTED("Analog.Threshold", ""));
+                    profile->InputEssMax = config->GetInt(NESTED("Analog.Max", ""));
+                    profile->EssMin = config->GetInt(NESTED("Ess.Min", ""));
+                    profile->EssMax = config->GetInt(NESTED("Ess.Max", ""));
 
                     for (auto const& val : rawProfile["AxisDeadzones"].items()) {
                         profile->AxisDeadzones[std::stoi(val.key())] = val.value();
@@ -210,6 +215,11 @@ void ControlDeck::LoadSettings() {
                     profile->UseGyro = config->GetBool(NESTED("Gyro.Enabled", ""));
                     profile->NotchProximityThreshold = config->GetInt(NESTED("Notches.ProximityThreshold", ""));
                     profile->UseStickDeadzoneForButtons = config->GetBool(NESTED("UseStickDeadzoneForButtons", ""));
+                    profile->UseEssAdapter = config->GetBool(NESTED("Ess.Enabled", ""));
+                    profile->InputEssMin = config->GetInt(NESTED("Analog.Threshold", ""));
+                    profile->InputEssMax = config->GetInt(NESTED("Analog.Max", ""));
+                    profile->EssMin = config->GetInt(NESTED("Ess.Min", ""));
+                    profile->EssMax = config->GetInt(NESTED("Ess.Max", ""));
 
                     for (auto const& val : rawProfile["AxisDeadzones"].items()) {
                         profile->AxisDeadzones[std::stoi(val.key())] = val.value();
@@ -267,6 +277,11 @@ void ControlDeck::SaveSettings() {
             config->SetBool(NESTED("Gyro.Enabled", ""), profile->UseGyro);
             config->SetInt(NESTED("Notches.ProximityThreshold", ""), profile->NotchProximityThreshold);
             config->SetBool(NESTED("UseStickDeadzoneForButtons", ""), profile->UseStickDeadzoneForButtons);
+            config->SetBool(NESTED("Ess.Enabled", ""), profile->UseEssAdapter);
+            config->SetInt(NESTED("Analog.Threshold", ""), profile->InputEssMin);
+            config->SetInt(NESTED("Analog.Max", ""), profile->InputEssMax);
+            config->SetInt(NESTED("Ess.Min", ""), profile->EssMin);
+            config->SetInt(NESTED("Ess.Max", ""), profile->EssMax);
 
             // Clear all sections with a one controller to many relationship.
             const static std::vector<std::string> sClearSections = { "Mappings", "AxisDeadzones", "AxisMinimumPress",
