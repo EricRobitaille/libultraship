@@ -224,11 +224,6 @@ void ControlDeck::LoadSettings() {
                     profile->UseGyro = config->GetBool(NESTED("Gyro.Enabled", ""));
                     profile->NotchProximityThreshold = config->GetInt(NESTED("Notches.ProximityThreshold", ""));
                     profile->UseStickDeadzoneForButtons = config->GetBool(NESTED("UseStickDeadzoneForButtons", ""));
-                    profile->UseEssAdapter = config->GetBool(NESTED("Ess.Enabled", ""));
-                    profile->InputEssMin = config->GetInt(NESTED("Analog.Threshold", ""));
-                    profile->InputEssMax = config->GetInt(NESTED("Analog.Max", ""));
-                    profile->EssMin = config->GetInt(NESTED("Ess.Min", ""));
-                    profile->EssMax = config->GetInt(NESTED("Ess.Max", ""));
                     profile->UseJoystickInterpolation =
                         config->GetBool(NESTED("JoystickInterpolation.UseJoystickInterpolation"));
                     profile->NbJoystickInterpolaion = config->GetInt(NESTED("JoystickInterpolation.NbOfZones"));
@@ -299,11 +294,6 @@ void ControlDeck::SaveSettings() {
             config->SetBool(NESTED("Gyro.Enabled", ""), profile->UseGyro);
             config->SetInt(NESTED("Notches.ProximityThreshold", ""), profile->NotchProximityThreshold);
             config->SetBool(NESTED("UseStickDeadzoneForButtons", ""), profile->UseStickDeadzoneForButtons);
-            config->SetBool(NESTED("Ess.Enabled", ""), profile->UseEssAdapter);
-            config->SetInt(NESTED("Analog.Threshold", ""), profile->InputEssMin);
-            config->SetInt(NESTED("Analog.Max", ""), profile->InputEssMax);
-            config->SetInt(NESTED("Ess.Min", ""), profile->EssMin);
-            config->SetInt(NESTED("Ess.Max", ""), profile->EssMax);
             config->SetBool(NESTED("JoystickInterpolation.UseJoystickInterpolation", ""),
                             profile->UseJoystickInterpolation);
 
