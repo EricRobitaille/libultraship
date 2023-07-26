@@ -489,19 +489,19 @@ void InputEditorWindow::DrawControllerSchema() {
 
 void InputEditorWindow::DrawJoystickInterpolationZone(int& analogMin, int& analogMax, int& resultMin, int& resultMax,
                                                       int index) {
-    BeginGroupPanel(std::format("Joystick zone {}", index).c_str(), ImVec2(500, 200));
-    if (ImGui::InputInt(std::format("Analog Min {}", index).c_str(), &analogMin)) {
+    BeginGroupPanel(StringHelper::Sprintf("Joystick zone %d", index).c_str(), ImVec2(500, 200));
+    if (ImGui::InputInt(StringHelper::Sprintf("Analog Min %d", index).c_str(), &analogMin)) {
         Context::GetInstance()->GetControlDeck()->SaveSettings();
     }
     ImGui::SameLine();
-    if (ImGui::InputInt(std::format("Result Min {}", index).c_str(), &resultMin)) { 
+    if (ImGui::InputInt(StringHelper::Sprintf("Result Min %d", index).c_str(), &resultMin)) { 
         Context::GetInstance()->GetControlDeck()->SaveSettings();
     }
-    if (ImGui::InputInt(std::format("Analog Max {}", index).c_str(), &analogMax)) {
+    if (ImGui::InputInt(StringHelper::Sprintf("Analog Max %d", index).c_str(), &analogMax)) {
         Context::GetInstance()->GetControlDeck()->SaveSettings();
     }
     ImGui::SameLine();
-    if (ImGui::InputInt(std::format("Result Max {}", index).c_str(), &resultMax)) {
+    if (ImGui::InputInt(StringHelper::Sprintf("Result Max %d", index).c_str(), &resultMax)) {
         Context::GetInstance()->GetControlDeck()->SaveSettings();    
     }
     EndGroupPanel(2.0f);
