@@ -12,6 +12,7 @@
 #define M_TAU 6.2831853071795864769252867665590057 // 2 * pi
 #define M_PI 3.14159265358979323846                // pi
 #define MINIMUM_RADIUS_TO_MAP_NOTCH 0.9
+#define DOUBLE_EPSILON 2.2204460492503131e-016     // smallest such that 1.0+DBL_EPSILON != 1.0
 
 namespace LUS {
 
@@ -303,9 +304,9 @@ void Controller::ApplyJoystickInterpolation(double& ux, double& uy, std::vector<
 
     double angle = 0.0;
     // get angle in rads
-    if (ux < DBL_EPSILON) {
+    if (ux < DOUBLE_EPSILON) {
         angle = 90.0 * (M_PI / 180);
-    } else if (uy < DBL_EPSILON) {
+    } else if (uy < DOUBLE_EPSILON) {
         angle = 0.0 * (M_PI / 180);
     } else {
         angle = std::atan(uy / ux);
