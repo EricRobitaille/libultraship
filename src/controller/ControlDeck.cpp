@@ -187,8 +187,8 @@ void ControlDeck::LoadSettings() {
                     profile->UseGyro = config->GetBool(NESTED("Gyro.Enabled", ""));
                     profile->NotchProximityThreshold = config->GetInt(NESTED("Notches.ProximityThreshold", ""));
                     profile->UseJoystickInterpolation =
-                        config->GetBool(NESTED("JoystickInterpolation.UseJoystickInterpolation"));
-                    profile->NbJoystickInterpolaion = config->GetInt(NESTED("JoystickInterpolation.NbOfZones"));
+                        config->GetBool(NESTED("JoystickInterpolation.UseJoystickInterpolation", ""));
+                    profile->NbJoystickInterpolaion = config->GetInt(NESTED("JoystickInterpolation.NbOfZones", ""));
                     
                     for (int i = 0; i < profile->NbJoystickInterpolaion * 2; ++i) {
                         profile->JoystickInterpolation_Analog.push_back(
@@ -225,8 +225,8 @@ void ControlDeck::LoadSettings() {
                     profile->NotchProximityThreshold = config->GetInt(NESTED("Notches.ProximityThreshold", ""));
                     profile->UseStickDeadzoneForButtons = config->GetBool(NESTED("UseStickDeadzoneForButtons", ""));
                     profile->UseJoystickInterpolation =
-                        config->GetBool(NESTED("JoystickInterpolation.UseJoystickInterpolation"));
-                    profile->NbJoystickInterpolaion = config->GetInt(NESTED("JoystickInterpolation.NbOfZones"));
+                        config->GetBool(NESTED("JoystickInterpolation.UseJoystickInterpolation", ""));
+                    profile->NbJoystickInterpolaion = config->GetInt(NESTED("JoystickInterpolation.NbOfZones", ""));
 
                     for (int i = 0; i < profile->NbJoystickInterpolaion * 2; ++i) {
                         int value = config->GetInt(NESTED("JoystickInterpolation.Analog%d", i));
