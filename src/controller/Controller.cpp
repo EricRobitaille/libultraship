@@ -101,7 +101,7 @@ void Controller::ProcessStick(int8_t& x, int8_t& y, float deadzoneX, float deadz
         SPDLOG_TRACE("Invalid Deadzone configured. Up/Down was {} and Left/Right is {}", deadzoneY, deadzoneX);
     }
 
-    if (useJoystickInterpolation) {
+    if (useJoystickInterpolation && analogs.size() > 0) {
         ApplyJoystickInterpolation(ux, uy, analogs, results);
     } else {
         // create scaled circular dead-zone
