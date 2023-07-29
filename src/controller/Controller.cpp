@@ -10,7 +10,9 @@
 #include <spdlog/spdlog.h>
 
 #define M_TAU 6.2831853071795864769252867665590057 // 2 * pi
+#define M_PI 3.14159265358979323846                // pi
 #define MINIMUM_RADIUS_TO_MAP_NOTCH 0.9
+#define DOUBLE_EPSILON 2.2204460492503131e-016     // smallest such that 1.0+DBL_EPSILON != 1.0
 
 namespace LUS {
 
@@ -90,7 +92,8 @@ int8_t Controller::ReadStick(int32_t portIndex, Stick stick, Axis axis) {
     return 0;
 }
 
-void Controller::ProcessStick(int8_t& x, int8_t& y, float deadzoneX, float deadzoneY, int32_t notchProxmityThreshold) {
+void Controller::ProcessStick(int8_t& x, int8_t& y, float deadzoneX, float deadzoneY, int32_t notchProxmityThreshold,
+                              bool useJoystickInterpolation, std::vector<int> analogs, std::vector<int> results) {
     auto ux = fabs(x);
     auto uy = fabs(y);
 
@@ -99,17 +102,22 @@ void Controller::ProcessStick(int8_t& x, int8_t& y, float deadzoneX, float deadz
         SPDLOG_TRACE("Invalid Deadzone configured. Up/Down was {} and Left/Right is {}", deadzoneY, deadzoneX);
     }
 
-    // create scaled circular dead-zone
-    auto len = sqrt(ux * ux + uy * uy);
-    if (len < deadzoneX) {
-        len = 0;
-    } else if (len > MAX_AXIS_RANGE) {
-        len = MAX_AXIS_RANGE / len;
+    if (useJoystickInterpolation && analogs.size() > 0) {
+        ApplyJoystickInterpolation(ux, uy, analogs, results);
     } else {
-        len = (len - deadzoneX) * MAX_AXIS_RANGE / (MAX_AXIS_RANGE - deadzoneX) / len;
+        // create scaled circular dead-zone
+        auto len = sqrt(ux * ux + uy * uy);
+        if (len < deadzoneX) {
+            len = 0;
+        } else if (len > MAX_AXIS_RANGE) {
+            len = MAX_AXIS_RANGE / len;
+        } else {
+            len = (len - deadzoneX) * MAX_AXIS_RANGE / (MAX_AXIS_RANGE - deadzoneX) / len;
+        }
+
+        ux *= len;
+        uy *= len;
     }
-    ux *= len;
-    uy *= len;
 
     // bound diagonals to an octagonal range {-69 ... +69}
     if (ux != 0.0 && uy != 0.0) {
@@ -160,9 +168,11 @@ void Controller::ReadToPad(OSContPad* pad, int32_t portIndex) {
 
     auto profile = GetProfile(portIndex);
     ProcessStick(leftStickX, leftStickY, profile->AxisDeadzones[0], profile->AxisDeadzones[1],
-                 profile->NotchProximityThreshold);
+                 profile->NotchProximityThreshold, profile->UseJoystickInterpolation,
+                 profile->JoystickInterpolation_Analog, profile->JoystickInterpolation_Result);
     ProcessStick(rightStickX, rightStickY, profile->AxisDeadzones[2], profile->AxisDeadzones[3],
-                 profile->NotchProximityThreshold);
+                 profile->NotchProximityThreshold, profile->UseJoystickInterpolation,
+                 profile->JoystickInterpolation_Analog, profile->JoystickInterpolation_Result);
 
     if (pad == nullptr) {
         return;
@@ -264,5 +274,62 @@ double Controller::GetClosestNotch(double angle, double approximationThreshold) 
     const auto closestNotch = std::round(angle / octagonAngle) * octagonAngle;
     const auto distanceToNotch = std::abs(fmod(closestNotch - angle + M_PI, M_TAU) - M_PI);
     return distanceToNotch < approximationThreshold / 2 ? closestNotch : angle;
+}
+
+void Controller::ApplyJoystickInterpolation(double& ux, double& uy, std::vector<int> analogs, std::vector<int> results) {
+    // Find the analog distance from center
+    double distanceFromCenter = std::sqrt(ux * ux + uy * uy);
+
+    // find the correct data for the current analog distance from center
+    // apply interploation
+    double interpolatedDistance = 0.0;
+    auto size = analogs.size();
+    bool hasFoundZone = false;
+    for (int i = 0; i < size - 1; i += 2) {
+        auto analogMin = analogs[i];
+        auto analogMax = analogs[i + 1];
+        auto resultMin = results[i];
+        auto resultMax = results[i + 1];
+        if (distanceFromCenter >= analogMin && distanceFromCenter <= analogMax) {
+            interpolatedDistance = CalculateInerpolationValue(distanceFromCenter, analogMin, analogMax, resultMin,
+                                                                   resultMax, InterpolationType::LINEAR);
+            hasFoundZone = true;
+            break;
+        }
+    }
+
+    if (!hasFoundZone) {
+        interpolatedDistance = results.back();
+    }
+
+    double angle = 0.0;
+    // get angle in rads
+    if (ux < DOUBLE_EPSILON) {
+        angle = 90.0 * (M_PI / 180);
+    } else if (uy < DOUBLE_EPSILON) {
+        angle = 0.0 * (M_PI / 180);
+    } else {
+        angle = std::atan(uy / ux);
+    }
+
+    ux = std::cos(angle) * interpolatedDistance;
+    uy = std::sin(angle) * interpolatedDistance;
+}
+
+double Controller::CalculateInerpolationValue(double v, int analogMin, int analogMax, int resultMin, int resultMax,
+                                              InterpolationType interpolationType) {
+    switch (interpolationType) {
+        case InterpolationType::DEADZONE:
+            return 0;
+        case InterpolationType::LINEAR:
+            return CalculateLinearInterpolation(v, analogMin, analogMax, resultMin, resultMax);
+        default:
+            break;
+    }
+}
+
+double Controller::CalculateLinearInterpolation(double v, int inputMin, int inputMax, int resultMin, int resultMax) {
+    double ratio = (double)(v - inputMin) / (double)(inputMax - inputMin);
+    return std::lerp(resultMin, resultMax, ratio);
 }
 } // namespace LUS

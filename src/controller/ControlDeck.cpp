@@ -2,6 +2,7 @@
 
 #include "Context.h"
 #include "Controller.h"
+#include "../config//Config.h"
 #include "DummyController.h"
 #include <Utils/StringHelper.h>
 #include "public/bridge/consolevariablebridge.h"
@@ -185,6 +186,19 @@ void ControlDeck::LoadSettings() {
                     profile->RumbleStrength = config->GetFloat(NESTED("Rumble.Strength", ""));
                     profile->UseGyro = config->GetBool(NESTED("Gyro.Enabled", ""));
                     profile->NotchProximityThreshold = config->GetInt(NESTED("Notches.ProximityThreshold", ""));
+                    profile->UseJoystickInterpolation =
+                        config->GetBool(NESTED("JoystickInterpolation.UseJoystickInterpolation", ""));
+                    profile->NbJoystickInterpolaion = config->GetInt(NESTED("JoystickInterpolation.NbOfZones", ""));
+                    
+                    for (int i = 0; i < profile->NbJoystickInterpolaion * 2; ++i) {
+                        profile->JoystickInterpolation_Analog.push_back(
+                            config->GetInt(NESTED("JoystickInterpolation.Analog%d", i)));
+                    }
+
+                    for (int i = 0; i < profile->NbJoystickInterpolaion * 2; ++i) {
+                        profile->JoystickInterpolation_Result.push_back(
+                            config->GetInt(NESTED("JoystickInterpolation.Result%d", i)));
+                    }
 
                     for (auto const& val : rawProfile["AxisDeadzones"].items()) {
                         profile->AxisDeadzones[std::stoi(val.key())] = val.value();
@@ -210,6 +224,19 @@ void ControlDeck::LoadSettings() {
                     profile->UseGyro = config->GetBool(NESTED("Gyro.Enabled", ""));
                     profile->NotchProximityThreshold = config->GetInt(NESTED("Notches.ProximityThreshold", ""));
                     profile->UseStickDeadzoneForButtons = config->GetBool(NESTED("UseStickDeadzoneForButtons", ""));
+                    profile->UseJoystickInterpolation =
+                        config->GetBool(NESTED("JoystickInterpolation.UseJoystickInterpolation", ""));
+                    profile->NbJoystickInterpolaion = config->GetInt(NESTED("JoystickInterpolation.NbOfZones", ""));
+
+                    for (int i = 0; i < profile->NbJoystickInterpolaion * 2; ++i) {
+                        int value = config->GetInt(NESTED("JoystickInterpolation.Analog%d", i));
+                        profile->JoystickInterpolation_Analog.push_back(value);
+                    }
+
+                    for (int i = 0; i < profile->NbJoystickInterpolaion * 2; ++i) {
+                        profile->JoystickInterpolation_Result.push_back(
+                            config->GetInt(NESTED("JoystickInterpolation.Result%d", i)));
+                    }
 
                     for (auto const& val : rawProfile["AxisDeadzones"].items()) {
                         profile->AxisDeadzones[std::stoi(val.key())] = val.value();
@@ -267,6 +294,11 @@ void ControlDeck::SaveSettings() {
             config->SetBool(NESTED("Gyro.Enabled", ""), profile->UseGyro);
             config->SetInt(NESTED("Notches.ProximityThreshold", ""), profile->NotchProximityThreshold);
             config->SetBool(NESTED("UseStickDeadzoneForButtons", ""), profile->UseStickDeadzoneForButtons);
+            config->SetBool(NESTED("JoystickInterpolation.UseJoystickInterpolation", ""),
+                            profile->UseJoystickInterpolation);
+
+            auto nbInterpolationZones = profile->JoystickInterpolation_Analog.size() / 2;
+            config->SetInt(NESTED("JoystickInterpolation.NbOfZones", ""), nbInterpolationZones);
 
             // Clear all sections with a one controller to many relationship.
             const static std::vector<std::string> sClearSections = { "Mappings", "AxisDeadzones", "AxisMinimumPress",
@@ -278,6 +310,18 @@ void ControlDeck::SaveSettings() {
                     }
                 }
             }
+
+            for (int i = 0; i < nbInterpolationZones * 2; ++i) {
+                config->SetInt(NESTED("JoystickInterpolation.Analog%d", i), profile->JoystickInterpolation_Analog[i]);
+            }
+
+            for (int i = 0; i < nbInterpolationZones * 2; ++i) {
+                config->SetInt(NESTED("JoystickInterpolation.Result%d", i), profile->JoystickInterpolation_Result[i]);
+            }
+
+            /*for (int i = 0; i < nbInterpolationZones; ++i) {
+                config->SetInt(NESTED("JoystickInterpolation.Type.%d", i), profile->JoystickInterpolation_Type[i]);
+            }*/
 
             for (auto const& [key, val] : profile->Mappings) {
                 config->SetInt(NESTED("Mappings.%d", key), val);
